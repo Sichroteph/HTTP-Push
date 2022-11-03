@@ -21,8 +21,8 @@ static const char VERSION[] = "4.0.0";
 static const char DEBUG_ENABLED = false;
 static const char RESET_DATA = false;
 
-// Calculate the size of the buffer you require by summing the sizes of all 
-// the keys and values in the larges message the app will handle. 
+// Calculate the size of the buffer you require by summing the sizes of all
+// the keys and values in the larges message the app will handle.
 // For example, a message containing three integer keys and values will work with a 32 byte buffer size.
 
 // Messages FROM phone contain multiple string values.
@@ -61,7 +61,7 @@ static DictionaryIterator *dict;
 static vector pendingIndexList;
 static vector folderIndexList;
 
-// var for chunking 
+// var for chunking
 static int currentChunkIndex = 0;
 static char *chunk_buffer = NULL;
 static int listByteSize = 0;
@@ -143,20 +143,20 @@ static struct RGB color_converter (int hexValue)
  rgbColor.r = ((hexValue >> 16) & 0xFF) ;
  rgbColor.g = ((hexValue >> 8) & 0xFF) ;
  rgbColor.b = ((hexValue) & 0xFF) ;
- return (rgbColor); 
+ return (rgbColor);
 }
 
 
 static int luminance_percentage_from_hex_string(char * hexStr) {
-    
+
     struct RGB rgb = color_converter(strtohex(hexStr));
-    
+
     double rd = rgb.r;
     double gd = rgb.g;
     double bd = rgb.b;
-    
+
     // constants from http://www.itu.int/rec/R-REC-BT.601
-    return ((int) (0.299 * rd + 0.587 * gd + 0.114 * bd) * 100 / 255); 
+    return ((int) (0.299 * rd + 0.587 * gd + 0.114 * bd) * 100 / 255);
 }
 
 static bool is_hex_string_dark(char * hexStr) {
@@ -188,10 +188,10 @@ void Stack_Deinit(Stack *S)
 int Stack_Top(Stack *S)
 {
     if (S->size == 0) {
-        if (DEBUG_ENABLED) 
+        if (DEBUG_ENABLED)
           APP_LOG(APP_LOG_LEVEL_DEBUG, "Error: stack empty\n");
         return -1;
-    } 
+    }
 
     return S->data[S->size-1];
 }
@@ -304,7 +304,7 @@ static void notification_back_button_handler(ClickRecognizerRef recognizer, void
   if (at_root()){
     window_set_click_config_provider_with_context(s_menu_window, pop_all_config, s_menu_layer);
   } else {
-    window_set_click_config_provider_with_context(s_menu_window, exit_notification_config, s_menu_layer);  
+    window_set_click_config_provider_with_context(s_menu_window, exit_notification_config, s_menu_layer);
   }
   scroll_layer_destroy(s_scroll_layer);
   text_layer_destroy(s_text_layer);
@@ -329,7 +329,7 @@ static void send_to_phone() {
 
   int folderIndex = (int) Stack_Top(&menuLayerStack);
   int rowIndex = (int) menu_layer_get_selected_index(s_menu_layer).row;
-  
+
   if (strcmp(statusList[folderIndex][rowIndex],"Ready") != 0 &&
      strcmp(status_content(folderIndex,rowIndex),"pending")!=0) {
     if (DEBUG_ENABLED)
@@ -350,7 +350,7 @@ static void send_to_phone() {
   #endif
 
 
-  // Add to pending List 
+  // Add to pending List
 
 
   if (DEBUG_ENABLED) {
@@ -359,7 +359,7 @@ static void send_to_phone() {
         printf("%s ", (char *) vector_get(&pendingIndexList, i));
     printf("\n");
   }
-  
+
   char * indexString = indexToString(folderIndex,rowIndex);
 
   vector_add(&pendingIndexList, (indexString));
@@ -384,8 +384,10 @@ if (DEBUG_ENABLED) {
   app_message_outbox_send();
 }
 
+
 void chunk_timer_callback(void *data) {
-  AppMessageResult amr; 
+
+  AppMessageResult amr;
   DictionaryResult dr;
   amr = app_message_outbox_begin(&dict);
 
@@ -407,19 +409,19 @@ void chunk_timer_callback(void *data) {
       else if (dr == DICT_NOT_ENOUGH_STORAGE) APP_LOG(APP_LOG_LEVEL_DEBUG,"DICT_NOT_ENOUGH_STORAGE");
       else if (dr == DICT_INVALID_ARGS) APP_LOG(APP_LOG_LEVEL_DEBUG,"DICT_INVALID_ARGS");
     }
-    
+
     if (DEBUG_ENABLED)
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Sent message to phone! (%d bytes)", (int) final_size);
     app_message_outbox_send();
 
   }
   else if(amr == APP_MSG_INVALID_ARGS) APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_INVALID_ARGS");
-  else if(amr == APP_MSG_BUSY) 
+  else if(amr == APP_MSG_BUSY)
   {
     if (DEBUG_ENABLED)
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_BUSY"); 
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_BUSY");
     if (DEBUG_ENABLED)
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"Sleeping for 500 milliseconds..."); 
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"Sleeping for 500 milliseconds...");
     app_timer_register(500, chunk_timer_callback, NULL);
   }
 
@@ -474,7 +476,7 @@ static void request_next_chunk_from_phone() {
 
   //if (listSize == 0) return;
 
-  AppMessageResult amr; 
+  AppMessageResult amr;
   DictionaryResult dr;
 
   amr = app_message_outbox_begin(&dict);
@@ -504,12 +506,12 @@ static void request_next_chunk_from_phone() {
     if (DEBUG_ENABLED)
       APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_INVALID_ARGS");
   }
-  else if(amr == APP_MSG_BUSY) 
-  { 
+  else if(amr == APP_MSG_BUSY)
+  {
     if (DEBUG_ENABLED)
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_BUSY"); 
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"APP_MSG_BUSY");
     if (DEBUG_ENABLED)
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"Sleeping for 500 milliseconds..."); 
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"Sleeping for 500 milliseconds...");
     app_timer_register(500, chunk_timer_callback, NULL);
   }
 
@@ -569,7 +571,7 @@ static bool startsWith(const char *a, const char *b)
 }
 
 static void chopStringBy(char *list,int amount) {
-  memmove(list, list+amount, strlen(list)); 
+  memmove(list, list+amount, strlen(list));
 }
 
 
@@ -676,7 +678,7 @@ static void update_menu_data(int stringSize) {
       free(buf);
       buf = NULL;
     }
-    
+
     listString[listByteSize] = '\0';
 
     if (DEBUG_ENABLED)
@@ -765,13 +767,13 @@ static void update_menu_data(int stringSize) {
       if (folderSize != 0) {
         theList[folderIndex] = (char **) malloc(folderSize * sizeof(char*));
         statusList[folderIndex] = (char **) malloc(folderSize * sizeof(char*));
-      } 
+      }
 
-      
+
       folderSizeList[folderIndex] = folderSize;
 
       if (folderParentIndex != -1 && folderRow != -1) {
-        if (DEBUG_ENABLED) 
+        if (DEBUG_ENABLED)
           APP_LOG(APP_LOG_LEVEL_DEBUG, "Writing folder name to theList[%d][%d]: %s",folderParentIndex,folderRow,folderName);
         theList[folderParentIndex][folderRow] = (char*)malloc((strlen(folderName)+1) * sizeof(char));
         memcpy(theList[folderParentIndex][folderRow],folderName+'\0',(strlen(folderName)+1) * sizeof(char));
@@ -860,7 +862,7 @@ static void update_menu_data(int stringSize) {
 
       backgroundIsDark = is_hex_string_dark(backgroundColorStr);
       chopStringBy(listString,1+ strlen(backgroundColorStr));
-      if (DEBUG_ENABLED){ 
+      if (DEBUG_ENABLED){
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) backgroundColorStr %s",backgroundColorStr);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) strlen(backgroundColorStr) %d",strlen(backgroundColorStr));
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) ListString %s\n",listString);
@@ -932,7 +934,7 @@ static void update_menu_data(int stringSize) {
 
       char * showFolderIconStr = extract_between(listString,"_","_");
       chopStringBy(listString,1+ strlen(showFolderIconStr));
-      if (DEBUG_ENABLED) { 
+      if (DEBUG_ENABLED) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) highlightColorStr %s",showFolderIconStr);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) strlen(highlightColorStr) %d",strlen(showFolderIconStr));
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) ListString %s\n",listString);
@@ -948,7 +950,7 @@ static void update_menu_data(int stringSize) {
 
       char * showStatusBarStr = extract_between(listString,"_","_");
       chopStringBy(listString,1+ strlen(showStatusBarStr));
-      if (DEBUG_ENABLED) { 
+      if (DEBUG_ENABLED) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) highlightColorStr %s",showStatusBarStr);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) strlen(highlightColorStr) %d",strlen(showStatusBarStr));
         APP_LOG(APP_LOG_LEVEL_DEBUG, "1) ListString %s\n",listString);
@@ -1101,19 +1103,19 @@ static int findn(int num)
  {
      int i, j;
      char c;
- 
+
      for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
          c = s[i];
          s[i] = s[j];
          s[j] = c;
      }
  }
- 
+
  /* itoa:  convert n to characters in s */
  static void itoa(int n, char s[])
  {
      int i, sign;
- 
+
      if ((sign = n) < 0)  /* record sign */
          n = -n;          /* make n positive */
      i = 0;
@@ -1214,13 +1216,16 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
       .durations = segments,
       .num_segments = ARRAY_LENGTH(segments),
     };
-    vibes_enqueue_custom_pattern(pat);
+    //vibes_enqueue_custom_pattern(pat);
+
 
     Tuple *response_string = dict_find(iter, KEY_RESPONSE);
     Tuple *array_row_index = dict_find(iter,KEY_INDEX);
     Tuple *array_folder_index = dict_find(iter,KEY_FOLDER_INDEX);
     Tuple *request_name_string = dict_find(iter, KEY_REQUEST_NAME);
     Tuple *notification_enabled = dict_find(iter,KEY_NOTIFICATION);
+
+
 
     int folder_index_of_array = 0;
     int row_index_of_array = 0;
@@ -1237,7 +1242,7 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 
     if (DEBUG_ENABLED) {
       printf("BEFORE REMOVE");
-    
+
       for (int i = 0; i < vector_total(&pendingIndexList); i++)
           printf("%s ", (char *) vector_get(&pendingIndexList, i));
       printf("\n");
@@ -1288,6 +1293,17 @@ if (DEBUG_ENABLED) {
     }
     menu_layer_reload_data(s_menu_layer);
 
+    if (strcmp(response_string->value->cstring, "Status Code: 200")==0){
+      vibes_short_pulse();
+         //exit_reason_set(APP_EXIT_ACTION_PERFORMED_SUCCESSFULLY);
+    window_stack_pop_all(1);
+
+
+    }
+    else {
+    //  vibes_double_pulse();
+      send_to_phone();
+    }
 
   } else if (strcmp(listAction, "chunk")==0) {
   if (!versionChecked) {
@@ -1304,10 +1320,10 @@ if (DEBUG_ENABLED) {
     if (DEBUG_ENABLED)
       APP_LOG(APP_LOG_LEVEL_DEBUG, "Found chunking call");
 
-    char *string_chunk = dict_find(iter, KEY_LIST)->value->cstring; 
+    char *string_chunk = dict_find(iter, KEY_LIST)->value->cstring;
 
     // make sure that buffer is clear before starting new chunking activity
-    if (currentChunkIndex == 0) { 
+    if (currentChunkIndex == 0) {
       if (DEBUG_ENABLED)
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Initializing chunk_buffer");
 
@@ -1336,7 +1352,7 @@ if (DEBUG_ENABLED) {
     }
 
     currentChunkIndex = currentChunkIndex + 1;
-    
+
     request_next_chunk_from_phone();
 
   } else if (strcmp(listAction, "version")==0) {
@@ -1362,7 +1378,7 @@ if (DEBUG_ENABLED) {
 
     listSize = array_size;
 
-    
+
 
     if (array_size > 0 && !layer_get_hidden(text_layer_get_layer(s_error_text_layer))) {
 
@@ -1382,7 +1398,7 @@ if (DEBUG_ENABLED) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Updating with array_string: %s", array_string);
 
       // TODO: append array_string and copy back into array_string then free chunk_buffer
-    } 
+    }
 
       // Check it was found. If not, dict_find() returns NULL
     if(array_string) {
@@ -1397,7 +1413,7 @@ if (DEBUG_ENABLED) {
       }
 
       // Allocate exactly the right amount of memory.
-      // This is usually the number of elements multiplied by 
+      // This is usually the number of elements multiplied by
       // the size of each element, returned by sizeof()
       s_buffer = (char*)malloc((length+1) * sizeof(char));
 
@@ -1405,7 +1421,7 @@ if (DEBUG_ENABLED) {
       //strcpy(s_buffer, array_string->value->cstring);
       memcpy(s_buffer,array_string,(length+1) * sizeof(char));
 
-      if (DEBUG_ENABLED) { 
+      if (DEBUG_ENABLED) {
         APP_LOG(APP_LOG_LEVEL_DEBUG, "List length: %d", length);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "Size retrieved from phone: %d", array_size);
         APP_LOG(APP_LOG_LEVEL_DEBUG, "List retrieved from phone: %s", s_buffer);
@@ -1437,8 +1453,8 @@ if (DEBUG_ENABLED) {
           APP_LOG(APP_LOG_LEVEL_DEBUG, "Start writing values to persist store.");
         // write into persistent store PERSIST_DATA_MAX_LENGTH - 1 bytes at a time
         int bytesRemaining = length;
-        persistentListIndex = 0; 
-        
+        persistentListIndex = 0;
+
         while (bytesRemaining > 0) {
 
           //char indexToInt[15];
@@ -1521,9 +1537,10 @@ if (DEBUG_ENABLED) {
   }
   if (DEBUG_ENABLED)
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Inbox handler completed");
+
 }
 
-static void select_callback(struct MenuLayer *s_menu_layer, MenuIndex *cell_index, 
+static void select_callback(struct MenuLayer *s_menu_layer, MenuIndex *cell_index,
                             void *callback_context) {
 
   if (DEBUG_ENABLED)
@@ -1545,8 +1562,8 @@ static void select_callback(struct MenuLayer *s_menu_layer, MenuIndex *cell_inde
   } else if (at_empty_folder()) {
     text_layer_set_text(s_error_text_layer, MSG_ERR_EMPTY_FOLDER);
     layer_set_hidden(text_layer_get_layer(s_error_text_layer), false);
-  
-  // If the status has a '_' char, we know it's a folder 
+
+  // If the status has a '_' char, we know it's a folder
   // also if folderIndexList is NULL, that means that means 1) no folders exist and 2) list was not generated from pebbleJS yet after 3.3.0
   } else if (strcmp(status_content(Stack_Top(&menuLayerStack),cell_index->row),"folder") == 0) {
     previousRowIndex = cell_index->row;
@@ -1575,40 +1592,48 @@ static void select_callback(struct MenuLayer *s_menu_layer, MenuIndex *cell_inde
     }
 
   } else {
+    vibes_short_pulse();
     send_to_phone();
+    app_timer_register(2000, send_to_phone, NULL);
+    app_timer_register(4000, send_to_phone, NULL);
+    app_timer_register(6000, send_to_phone, NULL);
+    app_timer_register(8000, send_to_phone, NULL);
+    app_timer_register(10000, send_to_phone, NULL);
+//psleep(2000);
+  //  send_to_phone();
   }
 }
 
-static uint16_t get_sections_count_callback(struct MenuLayer *menulayer, uint16_t section_index, 
+static uint16_t get_sections_count_callback(struct MenuLayer *menulayer, uint16_t section_index,
                                             void *callback_context) {
   int currentIndex = Stack_Top(&menuLayerStack);
-  if (currentIndex == -1) 
+  if (currentIndex == -1)
     return 0;
-  else 
+  else
     return folderSizeList[currentIndex];
 }
 
 #ifdef PBL_ROUND
-static int16_t get_cell_height_callback(MenuLayer *menu_layer, MenuIndex *cell_index, 
+static int16_t get_cell_height_callback(MenuLayer *menu_layer, MenuIndex *cell_index,
                                         void *callback_context) {
   return 60;
 }
 #endif
 
 
-static void draw_row_handler(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index, 
+static void draw_row_handler(GContext *ctx, const Layer *cell_layer, MenuIndex *cell_index,
                              void *callback_context) {
   //if (DEBUG_ENABLED)
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Draw handler");
   if (listSize == 0) return;
-  
+
   // if the folder's empty, draw nutt'n
   if (at_empty_folder()) return;
 
   int folderIndex = Stack_Top(&menuLayerStack);
   int rowIndex = cell_index->row;
 
-  char* name = theList[folderIndex][rowIndex]; 
+  char* name = theList[folderIndex][rowIndex];
   char * currentStatus = statusList[folderIndex][rowIndex];
 
   GBitmap * isFolder = NULL;
@@ -1621,8 +1646,8 @@ static void draw_row_handler(GContext *ctx, const Layer *cell_layer, MenuIndex *
   // printf("\n");
 
   if (currentStatus != NULL) {
-    
-    if (strcmp(status_content(folderIndex,rowIndex),"folder")==0) { 
+
+    if (strcmp(status_content(folderIndex,rowIndex),"folder")==0) {
       // Set the status field as "Open Folder"
       if (showFolderIcon) {
         if (backgroundIsDark) {
@@ -1659,7 +1684,7 @@ static void draw_row_handler(GContext *ctx, const Layer *cell_layer, MenuIndex *
 
     menu_cell_basic_draw(ctx, cell_layer, name, s_item_text, isFolder);
 
-  
+
 }
 
 
@@ -1707,10 +1732,10 @@ static void menu_window_load(Window *window) {
   if (DEBUG_ENABLED) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Loading Window");
     APP_LOG(APP_LOG_LEVEL_DEBUG, "listSize: %d", listSize);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "listString: %s", listString); 
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "listString: %s", listString);
   }
 
-  Stack_Init(&menuLayerStack,listSize); 
+  Stack_Init(&menuLayerStack,listSize);
 
   int statusBarOffset = showStatusBar ? STATUS_BAR_LAYER_HEIGHT : 0;
 
@@ -1739,7 +1764,7 @@ static void menu_window_load(Window *window) {
     APP_LOG(APP_LOG_LEVEL_INFO, "2Loading Window");
 
   menu_layer_set_click_config_onto_window(s_menu_layer, window);
-  
+
   layer_add_child(window_layer, menu_layer_get_layer(s_menu_layer));
   previous_ccp = window_get_click_config_provider(window);
 
@@ -1874,7 +1899,7 @@ static void init(void) {
   vector_init(&folderIndexList);
   loading = true;
 
-  
+
     if (RESET_DATA) {
       persist_delete(PERSIST_LIST_SIZE);
       persist_delete(PERSIST_LIST);
@@ -1964,7 +1989,7 @@ static void deinit(void) {
 
 int main(void) {
 
-
+  vibes_double_pulse();
   init();
   app_event_loop();
   deinit();
